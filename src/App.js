@@ -34,7 +34,7 @@ class App extends Component {
     let temp = this.state.list;
     for (let item of temp) {
       if (item.time === time) {
-        item.status = false;
+        item.status = !item.status;
       }
     }
     this.setState({
