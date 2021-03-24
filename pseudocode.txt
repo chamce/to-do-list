@@ -165,3 +165,9 @@ App
                     List
                     FilterBar
 
+addClicked
+    // add list item to list
+    create list item
+    item.text = input
+    
+    
