@@ -58,7 +58,14 @@ class App extends Component {
 
   clearClicked() {
     // clear completed
+    this.setState({
+      list: this.state.list.filter(item => item.status === true)
+    });
+  }
 
+  textEntered(event) {
+    this.setState({ input: event.target.value });
+    console.log(this.state.input);
   }
 
   listMapper(item, index) {
@@ -78,13 +85,34 @@ class App extends Component {
     }
   }
 
-  textEntered(event) {
-    this.setState({ input: event.target.value });
-    console.log(this.state.input);
+  componentDidMount() {
+    let input = window.localStorage.getItem('input');
+    let filter = window.localStorage.getItem('filter');
+    let list = window.localStorage.getItem('list');
+    if (input) {
+      this.setState({ input });
+    } else {
+      window.localStorage.setItem('input', '');
+    }
+    if (filter) {
+      this.setState({ filter });
+    } else {
+      window.localStorage.setItem('filter', 'All');
+    }
+    if (list) {
+      this.setState({ list: JSON.parse(list) });
+    } else {
+      window.localStorage.setItem('list', '[]');
+    }
+  }
+
+  componentDidUpdate() {
+    window.localStorage.setItem('input', this.state.input);
+    window.localStorage.setItem('filter', this.state.filter);
+    window.localStorage.setItem('list', JSON.stringify(this.state.list));
   }
 
   render() {
-
     return (
       <div className='container text-center'>
         <div className='row'>
@@ -97,26 +125,27 @@ class App extends Component {
                 <input type="text" name="name" value={this.state.input} onChange={this.textEntered} />
               </div>
               <div className='row mb-2'>
-                <button className='bg-dark text-white' onClick={this.addClicked}>Add</button>
+                <button className='btn btn-dark' onClick={this.addClicked}>Add</button>
               </div>
             </>
             <>
-              <div className='row mb-1'>
+              <div className='row mb-2'>
                 <div className="btn-group" role="group" aria-label="Basic example">
                   <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('All')}>All</button>
                   <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('Active')}>Active</button>
                   <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('Completed')}>Completed</button>
                 </div>
               </div>
-              <div className='row text-start'>
-                <h6>{this.state.list.filter(item => item.status === true).length} active tasks</h6>
-              </div>
             </>
             <>
-              <div className='row mb-2'>
+              <div className='row'>
                 {this.state.list.filter(this.listFilterer).map(this.listMapper)}
               </div>
             </>
+            <div className='d-flex justify-content-between mb-2 align-items-center'>
+              <h6>{this.state.list.filter(item => item.status === true).length} active tasks</h6>
+              <button className='btn btn-danger text-start' onClick={this.clearClicked}>Clear Completed</button>
+            </div>
           </div>
         </div>
       </div>
