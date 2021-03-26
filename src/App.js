@@ -16,6 +16,8 @@ class App extends Component {
     this.deleteClicked = this.deleteClicked.bind(this);
     this.filterClicked = this.filterClicked.bind(this);
     this.clearClicked = this.clearClicked.bind(this);
+    this.checkAll = this.checkAll.bind(this);
+    this.uncheckAll = this.uncheckAll.bind(this);
     this.listMapper = this.listMapper.bind(this);
     this.listFilterer = this.listFilterer.bind(this);
   }
@@ -23,10 +25,12 @@ class App extends Component {
   addClicked() {
     // add list item
     let item = { text: this.state.input, time: Date.now(), status: true };
-    this.setState({
-      list: this.state.list.concat(item),
-      input: ''
-    });
+    if (item.text.trim().length) {
+      this.setState({
+        list: this.state.list.concat(item),
+        input: ''
+      });
+    }
   }
 
   checkmarkClicked(time) {
@@ -63,6 +67,26 @@ class App extends Component {
     });
   }
 
+  checkAll() {
+    let temp = this.state.list;
+    for (let item of temp) {
+      item.status = false;
+    }
+    this.setState({
+      list: temp
+    });
+  }
+
+  uncheckAll() {
+    let temp = this.state.list;
+    for (let item of temp) {
+      item.status = true;
+    }
+    this.setState({
+      list: temp
+    });
+  }
+
   textEntered(event) {
     this.setState({ input: event.target.value });
     console.log(this.state.input);
@@ -87,18 +111,22 @@ class App extends Component {
 
   componentDidMount() {
     let input = window.localStorage.getItem('input');
-    // let filter = window.localStorage.getItem('filter');
+    let filter = window.localStorage.getItem('filter');
     let list = window.localStorage.getItem('list');
     if (input) {
       this.setState({ input });
     } else {
       window.localStorage.setItem('input', '');
     }
-    // if (filter) {
-    //   this.setState({ filter });
-    // } else {
-    //   window.localStorage.setItem('filter', 'All');
-    // }
+    if (input.length > 0 && !input.trim().length) {
+      this.setState({ input: '' });
+      window.localStorage.setItem('input', '');
+    }
+    if (filter) {
+      this.setState({ filter });
+    } else {
+      window.localStorage.setItem('filter', 'All');
+    }
     if (list) {
       this.setState({ list: JSON.parse(list) });
     } else {
@@ -108,7 +136,7 @@ class App extends Component {
 
   componentDidUpdate() {
     window.localStorage.setItem('input', this.state.input);
-    // window.localStorage.setItem('filter', this.state.filter);
+    window.localStorage.setItem('filter', this.state.filter);
     window.localStorage.setItem('list', JSON.stringify(this.state.list));
   }
 
@@ -137,21 +165,32 @@ class App extends Component {
             <>
               <div className='row mb-2'>
                 <div className="btn-group p-0" role="group" aria-label="Basic example">
-                  <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('All')}>All</button>
-                  <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('Active')}>Active</button>
-                  <button type="button" className="btn btn-primary" onClick={() => this.filterClicked('Completed')}>Completed</button>
+                  <button type="button" className={this.state.filter !== 'All' ? "btn btn-primary" : "btn btn-primary active"} onClick={() => this.filterClicked('All')}>All</button>
+                  <button type="button" className={this.state.filter !== 'Active' ? "btn btn-primary" : "btn btn-primary active"} onClick={() => this.filterClicked('Active')}>Active</button>
+                  <button type="button" className={this.state.filter !== 'Completed' ? "btn btn-primary" : "btn btn-primary active"} onClick={() => this.filterClicked('Completed')}>Completed</button>
                 </div>
               </div>
             </>
             <>
-              <div className='row'>
-                {this.state.list.filter(this.listFilterer).map(this.listMapper)}
+              <div className="d-flex justify-content-between">
+                <h6>{this.state.list.filter(item => item.status === true).length} active tasks</h6>
+                <h6>{this.state.list.filter(item => item.status === false).length} completed tasks</h6>
               </div>
             </>
             <>
-              <div className='d-flex justify-content-between mb-2 align-items-center'>
-                <h6>{this.state.list.filter(item => item.status === true).length} active tasks</h6>
-                <button className='btn btn-danger text-start' onClick={this.clearClicked}>Clear Completed</button>
+              <div className='row overflow-auto list mb-2 border border-dark rounded bg-info'>
+                <div className='mt-1'></div>
+                {this.state.list.filter(this.listFilterer).map(this.listMapper)}
+                <div className='mb-1'></div>
+              </div>
+            </>
+            <>
+              <div className='row mb-2'>
+                <div className="btn-group p-0" role="group" aria-label="Basic example">
+                  <button type="button" className="btn btn-success" onClick={this.checkAll}>Check All</button>
+                  <button type="button" className="btn btn-warning" onClick={this.uncheckAll}>Uncheck All</button>
+                  <button type="button" className="btn btn-danger" onClick={this.clearClicked}>Clear Checked</button>
+                </div>
               </div>
             </>
           </div>
